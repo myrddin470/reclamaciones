@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestor de Reclamaciones</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .card { width: 90vw; max-width: 1200px; min-width: 320px; border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,0.08);}
+    .form-control { width: 100%; }
+    @media (max-width: 640px){ .card { width: 96vw; padding: 16px; } }
+    .btn { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.375rem; background-color: white; color: #334155; transition: background-color 0.2s; }
+    .btn:hover { background-color: #f1f5f9; }
+  </style>
+</head>
+<body>
+<main class="card bg-white p-8">
+  <header class="mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">Gestor de Reclamaciones</h1>
+    <p class="text-sm text-slate-500 mt-1">Guarda y navega reclamaciones en localStorage y Firebase. Archivo base: <code>reclamaciones</code>.</p>
+  </header>
+
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Formulario -->
+    <div class="md:col-span-2 bg-slate-50 p-4 rounded-lg">
+      <form id="formReclamacion" class="space-y-4" onsubmit="return false;">
+        <div class="flex gap-3">
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-600">Número de reclamación</label>
+            <input id="numReclamacion" class="form-control mt-1 p-2 rounded border border-slate-200 bg-white" readonly />
+          </div>
+          <div class="w-48">
+            <label class="block text-xs font-medium text-slate-600">Fecha de la denuncia</label>
+            <input id="fechaDenuncia" type="date" class="form-control mt-1 p-2 rounded border border-slate-200 bg-white" />
+          </div>
+          <div class="w-44">
+            <label class="block text-xs font-medium text-slate-600">Estado</label>
+            <select id="estado" class="form-control mt-1 p-2 rounded border border-slate-200 bg-white">
+              <option>Abierta</option>
+              <option>En trámite</option>
+              <option>Cerrada</option>
+              <option>Archivada</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset class="border border-slate-100 rounded p-3">
+          <legend class="text-sm font-medium text-slate-700">Datos del reclamante</legend>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+            <input id="recDNI" placeholder="DNI/NIE" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recNombre" placeholder="Nombre" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recApellidos" placeholder="Apellidos" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recDomicilio" placeholder="Domicilio" class="form-control p-2 rounded border border-slate-200 md:col-span-2" />
+            <input id="recCP" placeholder="Código Postal" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recLocalidad" placeholder="Localidad" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recProvincia" placeholder="Provincia" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recTelefono" placeholder="Teléfono" class="form-control p-2 rounded border border-slate-200" />
+            <input id="recEmail" placeholder="Email" class="form-control p-2 rounded border border-slate-200" />
+          </div>
+        </fieldset>
+
+        <fieldset class="border border-slate-100 rounded p-3">
+          <legend class="text-sm font-medium text-slate-700">Empresa reclamada</legend>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+            <input id="empNIF" placeholder="NIF/CIF" class="form-control p-2 rounded border border-slate-200" />
+            <input id="empDenominacion" placeholder="Denominación" class="form-control p-2 rounded border border-slate-200 md:col-span-2" />
+            <input id="empDomicilio" placeholder="Domicilio" class="form-control p-2 rounded border border-slate-200 md:col-span-2" />
+            <input id="empCP" placeholder="Código Postal" class="form-control p-2 rounded border border-slate-200" />
+            <input id="empLocalidad" placeholder="Localidad" class="form-control p-2 rounded border border-slate-200" />
+            <input id="empProvincia" placeholder="Provincia" class="form-control p-2 rounded border border-slate-200" />
+            <input id="empTelefono" placeholder="Teléfono" class="form-control p-2 rounded border border-slate-200" />
+            <input id="empEmail" placeholder="Email" class="form-control p-2 rounded border border-slate-200" />
+          </div>
+        </fieldset>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="md:col-span-1">
+            <label class="block text-xs font-medium text-slate-600">Hecho denunciado</label>
+            <textarea id="hechoDenunciado" rows="4" class="form-control mt-1 p-2 rounded border border-slate-200"></textarea>
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-xs font-medium text-slate-600">Observaciones</label>
+            <textarea id="observaciones" rows="4" class="form-control mt-1 p-2 rounded border border-slate-200"></textarea>
+          </div>
+          <div class="md:col-span-1">
+            <label class="block text-xs font-medium text-slate-600">Tramitación</label>
+            <textarea id="tramitacion" rows="4" class="form-control mt-1 p-2 rounded border border-slate-200"></textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end mt-4">
+          <button id="btnNuevo" type="button" class="btn">Nuevo</button>
+          <button id="btnGuardar" type="button" class="btn">Guardar</button>
+          <button id="btnBorrar" type="button" class="btn">Borrar</button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Panel lateral -->
+    <aside class="bg-white p-4 rounded-lg border border-slate-100">
+      <div class="space-y-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-700">Navegación</h2>
+          <div class="mt-3 flex gap-2">
+            <button id="btnPrimero" class="btn">Primero</button>
+            <button id="btnPrevio" class="btn">Previo</button>
+            <button id="btnSiguiente" class="btn">Siguiente</button>
+            <button id="btnUltimo" class="btn">Último</button>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-sm font-semibold text-slate-700">Buscar por número</h2>
+          <div class="mt-2 flex gap-2">
+            <input id="buscarNumero" placeholder="Número reclamación" class="form-control p-2 rounded border border-slate-200" />
+            <button id="btnBuscarNumero" class="flex-1 p-2 rounded border border-slate-200">Buscar</button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h2 class="text-sm font-semibold text-slate-700">Buscar por DNI</h2>
+          <div class="mt-2 flex gap-2">
+            <input id="buscarDNI" placeholder="DNI reclamante" class="form-control p-2 rounded border border-slate-200" />
+            <button id="btnBuscarDNI" class="flex-1 p-2 rounded border border-slate-200">Buscar</button>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-sm font-semibold text-slate-700">Estado actual</h2>
+          <p class="mt-2 text-sm text-slate-600" id="infoRegistro">Sin registros cargados.</p>
+        </div>
+
+        <div>
+          <h2 class="text-sm font-semibold text-slate-700">Exportar / Importar</h2>
+          <div class="mt-2 flex gap-2">
+            <button id="btnExportar" class="btn">Exportar JSON</button>
+            <button id="btnImportar" class="btn">Importar JSON</button>
+          </div>
+          <input id="inputFile" type="file" accept="application/json" class="hidden" />
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="mt-6 text-xs text-slate-500 flex justify-between items-center">
+    <span>Guardado en <code>localStorage</code> y <code>Firebase</code> — clave: <strong>reclamaciones</strong></span>
+    <span>Diseño minimalista • Ejecutable localmente o en la nube</span>
+  </footer>
+</main>
+
+<!-- ----------------- FIREBASE ----------------- -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyDZ5nVbeV4goXUJPETLa3jzY1GdqOYqHcc",
+  authDomain: "gestor-reclamaciones.firebaseapp.com",
+  databaseURL: "https://gestor-reclamaciones-default-rtdb.firebaseio.com",
+  projectId: "gestor-reclamaciones",
+  storageBucket: "gestor-reclamaciones.firebasestorage.app",
+  messagingSenderId: "1078314707222",
+  appId: "1:1078314707222:web:677ef422ddaa4d8f9a8837"
+};
+</script>
+
+<!-- ----------------- SCRIPT PRINCIPAL ----------------- -->
+<script>
+  const STORAGE_KEY = 'reclamaciones';
+  const year = new Date().getFullYear();
+
+  // ----------------- CAMPOS -----------------
+  const numReclamacion = document.getElementById('numReclamacion');
+  const fechaDenuncia = document.getElementById('fechaDenuncia');
+  const estado = document.getElementById('estado');
+
+  const fields = {
+    recDNI: document.getElementById('recDNI'),
+    recNombre: document.getElementById('recNombre'),
+    recApellidos: document.getElementById('recApellidos'),
+    recDomicilio: document.getElementById('recDomicilio'),
+    recCP: document.getElementById('recCP'),
+    recLocalidad: document.getElementById('recLocalidad'),
+    recProvincia: document.getElementById('recProvincia'),
+    recTelefono: document.getElementById('recTelefono'),
+    recEmail: document.getElementById('recEmail'),
+    empNIF: document.getElementById('empNIF'),
+    empDenominacion: document.getElementById('empDenominacion'),
+    empDomicilio: document.getElementById('empDomicilio'),
+    empCP: document.getElementById('empCP'),
+    empLocalidad: document.getElementById('empLocalidad'),
+    empProvincia: document.getElementById('empProvincia'),
+    empTelefono: document.getElementById('empTelefono'),
+    empEmail: document.getElementById('empEmail'),
+    hechoDenunciado: document.getElementById('hechoDenunciado'),
+    observaciones: document.getElementById('observaciones'),
+    tramitacion: document.getElementById('tramitacion')
+  };
+
+  // ----------------- BOTONES -----------------
+  const btnNuevo = document.getElementById('btnNuevo');
+  const btnGuardar = document.getElementById('btnGuardar');
+  const btnBorrar = document.getElementById('btnBorrar');
+  const btnPrimero = document.getElementById('btnPrimero');
+  const btnPrevio = document.getElementById('btnPrevio');
+  const btnSiguiente = document.getElementById('btnSiguiente');
+  const btnUltimo = document.getElementById('btnUltimo');
+  const btnBuscarNumero = document.getElementById('btnBuscarNumero');
+  const buscarNumeroInput = document.getElementById('buscarNumero');
+  const btnBuscarDNI = document.getElementById('btnBuscarDNI');
+  const buscarDNIInput = document.getElementById('buscarDNI');
+  const infoRegistro = document.getElementById('infoRegistro');
+  const btnExportar = document.getElementById('btnExportar');
+  const btnImportar = document.getElementById('btnImportar');
+  const inputFile = document.getElementById('inputFile');
+
+  // ----------------- DATOS -----------------
+  let registros = [];
+  let indiceActual = -1;
+
+  // ----------------- FUNCIONES AUXILIARES -----------------
+  function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(registros)); }
+  function loadFromStorage() { registros = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+
+  function generarNumeroSiguiente() {
+    const ultimo = registros.length ? Math.max(...registros.map(r => parseInt((r.numero.match(/LE-00(\d+)-P-\d{4}/)||[0,100])[1]))) : 100;
+    return `LE-00${ultimo+1}-P-${new Date().getFullYear()}`;
+  }
+
+  function leerFormulario() {
+    return {
+      numero: numReclamacion.value.trim(),
+      fechaDenuncia: fechaDenuncia.value || '',
+      estado: estado.value || '',
+      reclamante: {
+        dni: fields.recDNI.value, nombre: fields.recNombre.value, apellidos: fields.recApellidos.value,
+        domicilio: fields.recDomicilio.value, cp: fields.recCP.value, localidad: fields.recLocalidad.value,
+        provincia: fields.recProvincia.value, telefono: fields.recTelefono.value, email: fields.recEmail.value
+      },
+      empresa: {
+        nif: fields.empNIF.value, denominacion: fields.empDenominacion.value, domicilio: fields.empDomicilio.value,
+        cp: fields.empCP.value, localidad: fields.empLocalidad.value, provincia: fields.empProvincia.value,
+        telefono: fields.empTelefono.value, email: fields.empEmail.value
+      },
+      hechoDenunciado: fields.hechoDenunciado.value,
+      observaciones: fields.observaciones.value,
+      tramitacion: fields.tramitacion.value,
+      actualizadoEn: new Date().toISOString()
+    };
+  }
+
+  function mostrarRegistro(i) {
+    if (i < 0 || i >= registros.length) return;
+    const r = registros[i];
+    numReclamacion.value = r.numero;
+    fechaDenuncia.value = r.fechaDenuncia || '';
+    estado.value = r.estado || 'Abierta';
+    for (let key in fields) {
+      if (key.startsWith('rec')) fields[key].value = r.reclamante?.[key.replace('rec','').toLowerCase()] || '';
+      else if (key.startsWith('emp')) fields[key].value = r.empresa?.[key.replace('emp','').toLowerCase()] || '';
+      else fields[key].value = r[key] || '';
+    }
+    indiceActual = i;
+    actualizarInfo();
+  }
+
+  function prepararNuevo() {
+    numReclamacion.value = generarNumeroSiguiente();
+    fechaDenuncia.value = new Date().toISOString().slice(0,10);
+    estado.value = 'Abierta';
+    for (let key in fields) fields[key].value = '';
+    indiceActual = -1;
+    actualizarInfo();
+  }
+
+  function actualizarInfo() {
+    infoRegistro.textContent = registros.length === 0
+      ? 'Sin registros guardados.'
+      : indiceActual >= 0
+        ? `Mostrando ${indiceActual+1} / ${registros.length} — ${registros[indiceActual].numero}`
+        : `Nuevo registro ${numReclamacion.value}`;
+  }
+
+  // ----------------- BOTONES -----------------
+  btnGuardar.onclick = async () => {
+    const data = leerFormulario();
+    const idx = registros.findIndex(r => r.numero === data.numero);
+    if (idx >= 0) registros[idx] = data;
+    else registros.push(data);
+    indiceActual = registros.findIndex(r => r.numero === data.numero);
+    saveToStorage();
+
+    try { await db.ref('reclamaciones/'+data.numero).set(data); } 
+    catch(e){ console.error(e); alert('Error guardando en Firebase'); }
+
+    mostrarRegistro(indiceActual);
+  };
+
+  btnBorrar.onclick = async () => {
+    if (indiceActual === -1) return prepararNuevo();
+    if (!confirm(`¿Borrar la reclamación ${registros[indiceActual].numero}?`)) return;
+    const numeroABorrar = registros[indiceActual].numero;
+    registros.splice(indiceActual,1);
+    saveToStorage();
+    try { await db.ref('reclamaciones/'+numeroABorrar).remove(); } 
+    catch(e){ console.error(e); alert('Error borrando en Firebase'); }
+
+    if (registros.length === 0) prepararNuevo();
+    else {
+      if (indiceActual >= registros.length) indiceActual = registros.length-1;
+      mostrarRegistro(indiceActual);
+    }
+  };
+
+  btnNuevo.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; prepararNuevo(); };
+  btnPrimero.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; if(registros.length) mostrarRegistro(0); };
+  btnPrevio.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; if(indiceActual>0) mostrarRegistro(indiceActual-1); };
+  btnSiguiente.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; if(indiceActual<registros.length-1) mostrarRegistro(indiceActual+1); };
+  btnUltimo.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; if(registros.length) mostrarRegistro(registros.length-1); };
+
+  btnBuscarNumero.onclick = () => {
+    const val = buscarNumeroInput.value.trim(); if(!val) return alert('Introduce un número para buscar.');
+    const coincidencias = registros.map((r,i)=>({r,i})).filter(x=>x.r.numero && x.r.numero.includes(val));
+    if(coincidencias.length===0) return alert('No se encontró ninguna reclamación con ese número.');
+    if(coincidencias.length===1){ mostrarRegistro(coincidencias[0].i); return; }
+    alert(`Se encontraron varias coincidencias:\n${coincidencias.map(x=>x.r.numero).join('\n')}`);
+  };
+
+  btnBuscarDNI.onclick = () => {
+    const val = buscarDNIInput.value.trim(); if(!val) return alert('Introduce un DNI para buscar.');
+    const coincidencias = registros.map((r,i)=>({r,i})).filter(x=>x.r.reclamante && x.r.reclamante.dni && x.r.reclamante.dni.toLowerCase()===val.toLowerCase());
+    if(coincidencias.length===0) return alert('No se encontró ninguna reclamación con ese DNI.');
+    if(coincidencias.length===1){ mostrarRegistro(coincidencias[0].i); return; }
+    alert(`Se encontraron varias coincidencias:\n${coincidencias.map(x=>x.r.numero).join('\n')}`);
+  };
+
+  buscarNumeroInput.addEventListener('focus',()=>{ buscarDNIInput.value=''; });
+  buscarDNIInput.addEventListener('focus',()=>{ buscarNumeroInput.value=''; });
+
+  btnExportar.onclick = () => {
+    const blob = new Blob([JSON.stringify(registros,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='reclamaciones.json'; a.click();
+  };
+  btnImportar.onclick = () => inputFile.click();
+  inputFile.onchange = e => {
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload = ev=>{
+      try{
+        const imported=JSON.parse(ev.target.result);
+        if(!Array.isArray(imported)) throw new Error('Formato no válido');
+        registros=imported;
+        saveToStorage();
+        mostrarRegistro(registros.length-1);
+        alert('Importación completada.');
+      }catch{ alert('Error al importar el archivo JSON.'); }
+    };
+    reader.readAsText(file);
+  };
+
+  // ----------------- CARGAR DATOS AL INICIO -----------------
+  async function cargarRegistros() {
+    try{
+      const snapshot=await db.ref('reclamaciones').get();
+      if(snapshot.exists()){ registros=Object.values(snapshot.val()); saveToStorage(); }
+      else registros=[];
+    }catch{ loadFromStorage(); }
+
+    if(registros.length>0){ indiceActual=registros.length-1; mostrarRegistro(indiceActual); }
+    else prepararNuevo();
+    actualizarInfo();
+  }
+
+  cargarRegistros();
+
+  // ----------------- LISTENER EN TIEMPO REAL -----------------
+  db.ref('reclamaciones').on('value',(snapshot)=>{
+    if(snapshot.exists()){
+      registros=Object.values(snapshot.val());
+      saveToStorage();
+      if(registros.length===0){ prepararNuevo(); indiceActual=-1; }
+      else { if(indiceActual>=registros.length || indiceActual===-1) indiceActual=registros.length-1; mostrarRegistro(indiceActual); }
+      actualizarInfo();
+    } else {
+      registros=[]; saveToStorage(); prepararNuevo(); indiceActual=-1;
+    }
+  });
+</script>
+</body>
+</html>
