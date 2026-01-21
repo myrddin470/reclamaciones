@@ -163,22 +163,23 @@
 <!-- ----------------- FIREBASE ----------------- -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
   const firebaseConfig = {
-  apiKey: "AIzaSyDZ5nVbeV4goXUJPETLa3jzY1GdqOYqHcc",
-  authDomain: "gestor-reclamaciones.firebaseapp.com",
-  databaseURL: "https://gestor-reclamaciones-default-rtdb.firebaseio.com",
-  projectId: "gestor-reclamaciones",
-  storageBucket: "gestor-reclamaciones.firebasestorage.app",
-  messagingSenderId: "1078314707222",
-  appId: "1:1078314707222:web:677ef422ddaa4d8f9a8837"
+    apiKey: "AIzaSyDZ5nVbeV4goXUJPETLa3jzY1GdqOYqHcc",
+    authDomain: "gestor-reclamaciones.firebaseapp.com",
+    databaseURL: "https://gestor-reclamaciones-default-rtdb.firebaseio.com",
+    projectId: "gestor-reclamaciones",
+    storageBucket: "gestor-reclamaciones.appspot.com",
+    messagingSenderId: "1078314707222",
+    appId: "1:1078314707222:web:677ef422ddaa4d8f9a8837"
+  };
 
-   firebase.initializeApp(firebaseConfig);
+  // 🔥 Inicialización CORRECTA
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
-  
-};
 </script>
+
 
 <!-- ----------------- SCRIPT PRINCIPAL ----------------- -->
 <script>
