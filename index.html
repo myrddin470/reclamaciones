@@ -307,8 +307,12 @@
     indiceActual = registros.findIndex(r => r.numero === data.numero);
     saveToStorage();
 
-    try { await db.ref('reclamaciones/'+data.numero).set(data); } 
-    catch(e){ console.error(e); alert('Error guardando en Firebase'); }
+    db.ref('reclamaciones/' + data.numero)
+  .set(data)
+  .catch(e => {
+    console.error(e);
+    alert('Error guardando en Firebase');
+  });
 
     mostrarRegistro(indiceActual);
   };
@@ -319,8 +323,14 @@
     const numeroABorrar = registros[indiceActual].numero;
     registros.splice(indiceActual,1);
     saveToStorage();
-    try { await db.ref('reclamaciones/'+numeroABorrar).remove(); } 
-    catch(e){ console.error(e); alert('Error borrando en Firebase'); }
+    
+    db.ref('reclamaciones/' + numeroABorrar)
+  .remove()
+  .catch(e => {
+    console.error(e);
+    alert('Error borrando en Firebase');
+  });
+
 
     if (registros.length === 0) prepararNuevo();
     else {
