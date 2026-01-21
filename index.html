@@ -172,6 +172,11 @@
   storageBucket: "gestor-reclamaciones.firebasestorage.app",
   messagingSenderId: "1078314707222",
   appId: "1:1078314707222:web:677ef422ddaa4d8f9a8837"
+
+   firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  
 };
 </script>
 
@@ -293,69 +298,35 @@
   }
 
   // ----------------- BOTONES -----------------
- btnGuardar.onclick = async () => {
-  const registro = recogerFormulario();
+  btnGuardar.onclick = async () => {
+    const data = leerFormulario();
+    const idx = registros.findIndex(r => r.numero === data.numero);
+    if (idx >= 0) registros[idx] = data;
+    else registros.push(data);
+    indiceActual = registros.findIndex(r => r.numero === data.numero);
+    saveToStorage();
 
-  // 🔑 crear clave firebase si no existe
-  if (!registro.id) {
-    registro.id = db.ref().child('reclamaciones').push().key;
-  }
+    try { await db.ref('reclamaciones/'+data.numero).set(data); } 
+    catch(e){ console.error(e); alert('Error guardando en Firebase'); }
 
-  registros.push(registro);
-  saveToStorage();
-
-  try {
-    await db.ref('reclamaciones/' + registro.id).set(registro);
-  } catch (e) {
-    console.error(e);
-    alert('Error guardando en Firebase');
-  }
-
-  indiceActual = registros.length - 1;
-  mostrarRegistro(indiceActual);
-};
-
+    mostrarRegistro(indiceActual);
+  };
 
   btnBorrar.onclick = async () => {
-  // No hay registro cargado
-  if (indiceActual === -1) {
-    prepararNuevo();
-    return;
-  }
+    if (indiceActual === -1) return prepararNuevo();
+    if (!confirm(`¿Borrar la reclamación ${registros[indiceActual].numero}?`)) return;
+    const numeroABorrar = registros[indiceActual].numero;
+    registros.splice(indiceActual,1);
+    saveToStorage();
+    try { await db.ref('reclamaciones/'+numeroABorrar).remove(); } 
+    catch(e){ console.error(e); alert('Error borrando en Firebase'); }
 
-  const registroActual = registros[indiceActual];
-
-  if (!confirm(`¿Borrar la reclamación ${registroActual.numero}?`)) return;
-
-  // 1️⃣ BORRAR EN FIREBASE (USANDO id REAL)
-  if (registroActual.id) {
-    try {
-      await db.ref('reclamaciones/' + registroActual.id).remove();
-    } catch (e) {
-      console.error(e);
-      alert('Error borrando en Firebase');
-      return; // no continuar si falla Firebase
+    if (registros.length === 0) prepararNuevo();
+    else {
+      if (indiceActual >= registros.length) indiceActual = registros.length-1;
+      mostrarRegistro(indiceActual);
     }
-  }
-
-  // 2️⃣ BORRAR EN MEMORIA
-  registros.splice(indiceActual, 1);
-
-  // 3️⃣ GUARDAR LOCALSTORAGE
-  saveToStorage();
-
-  // 4️⃣ ACTUALIZAR ÍNDICE Y VISTA
-  if (registros.length === 0) {
-    indiceActual = -1;
-    prepararNuevo();
-  } else {
-    if (indiceActual >= registros.length) {
-      indiceActual = registros.length - 1; // ir al anterior si borraste el último
-    }
-    mostrarRegistro(indiceActual);
-  }
-};
-
+  };
 
   btnNuevo.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; prepararNuevo(); };
   btnPrimero.onclick = () => { buscarNumeroInput.value=''; buscarDNIInput.value=''; if(registros.length) mostrarRegistro(0); };
